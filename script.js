@@ -1,3 +1,9 @@
-document.getElementById('btn').addEventListener('click', function() {
-  alert('JavaScript works! Congrats on your live site 🎉');
+let count = 0;
+const countDisplay = document.getElementById('count');
+const button = document.getElementById('btn');
+
+button.addEventListener('click', function() {
+  count++;
+  countDisplay.textContent = count;
+  alert(`You clicked ${count} times! JavaScript is live 🚀`);
 });
