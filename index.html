@@ -1,7 +1,10 @@
-<body>
-  <h1>Updated Version – Now with a Counter!</h1>
-  <p>This site was updated via GitHub push. Click the button to count clicks.</p>
-  <button id="btn">Click Me (Count: <span id="count">0</span>)</button>
+<h2>Roblox User Lookup</h2>
+<input type="text" id="robloxUsername" placeholder="Enter Roblox username (e.g., Roblox)" />
+<button id="lookupRobloxBtn">Search</button>
 
-  <script src="script.js"></script>
-</body>
+<div id="robloxResult" style="margin-top: 20px;">
+  <p><strong>Display Name:</strong> <span id="displayName">—</span></p>
+  <p><strong>Username:</strong> <span id="username">—</span></p>
+  <p><strong>Joined:</strong> <span id="joinDate">—</span></p>
+  <img id="avatarImg" src="" alt="Avatar" style="width: 150px; height: 150px; border-radius: 50%; display: none;" />
+</div>
