@@ -1,65 +1,115 @@
-document.getElementById('lookupRobloxBtn').addEventListener('click', async () => {
-  const username = document.getElementById('robloxUsername').value.trim();
-  if (!username) {
-    alert('Enter a Roblox username!');
+let vibrationEnabled = false;
+let gamepadIndex = -1;
+
+const statusLight = document.getElementById('statusLight');
+const statusText = document.getElementById('statusText');
+const vibrateToggle = document.getElementById('vibrateToggle');
+const connectedInfo = document.getElementById('connectedInfo');
+const controllerName = document.getElementById('controllerName');
+
+// Listen for connection/disconnection events
+window.addEventListener('gamepadconnected', (e) => {
+  console.log('Gamepad connected:', e.gamepad);
+  detectGamepad();
+});
+
+window.addEventListener('gamepaddisconnected', (e) => {
+  console.log('Gamepad disconnected:', e.gamepad);
+  updateStatus(false, null);
+});
+
+// Poll to detect changes (some browsers need this)
+setInterval(detectGamepad, 1000);
+
+// Initial check
+detectGamepad();
+
+function detectGamepad() {
+  const gamepads = navigator.getGamepads();
+  for (let i = 0; i < gamepads.length; i++) {
+    if (gamepads[i]) {
+      gamepadIndex = i;
+      updateStatus(true, gamepads[i]);
+      return;
+    }
+  }
+  updateStatus(false, null);
+}
+
+function updateStatus(connected, gamepad) {
+  if (connected && gamepad) {
+    statusLight.className = 'status-light green';
+    statusText.textContent = 'Controller Connected!';
+    connectedInfo.style.display = 'block';
+    controllerName.textContent = gamepad.id.split('(')[0] || 'Unknown Controller';
+    vibrationEnabled = false;
+    vibrateToggle.textContent = 'Connect & Test Vibration';
+    vibrateToggle.classList.remove('vibrate-on');
+  } else {
+    statusLight.className = 'status-light red';
+    statusText.textContent = 'No Controller Connected';
+    connectedInfo.style.display = 'none';
+    gamepadIndex = -1;
+  }
+}
+
+// Toggle button logic
+vibrateToggle.addEventListener('click', () => {
+  if (gamepadIndex === -1) {
+    alert('Connect a controller and press any button first!');
+    detectGamepad();
     return;
   }
 
-  const resultDiv = document.getElementById('robloxResult');
-  resultDiv.style.display = 'block';
+  vibrationEnabled = !vibrationEnabled;
 
-  try {
-    // Step 1: Get User ID from username (POST to usernames/users)
-    const userResponse = await fetch('https://users.roblox.com/v1/usernames/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        usernames: [username],
-        excludeBannedUsers: true
-      })
-    });
-    const userData = await userResponse.json();
-
-    if (!userData.data || userData.data.length === 0) {
-      document.getElementById('displayName').textContent = 'User not found';
-      return;
-    }
-
-    const userId = userData.data[0].id;
-    const displayName = userData.data[0].displayName || userData.data[0].name;
-    const actualUsername = userData.data[0].name;
-
-    // Step 2: Get full user details (including created date)
-    const detailsResponse = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-    const details = await detailsResponse.json();
-
-    const joinDate = new Date(details.created).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric'
-    });
-
-    // Step 3: Get avatar thumbnail (headshot, 150x150 PNG)
-    const avatarResponse = await fetch(
-      `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`
-    );
-    const avatarData = await avatarResponse.json();
-
-    let avatarUrl = '';
-    if (avatarData.data && avatarData.data.length > 0 && avatarData.data[0].state === 'Completed') {
-      avatarUrl = avatarData.data[0].imageUrl;
-    } else {
-      avatarUrl = 'https://via.placeholder.com/150?text=No+Avatar'; // Fallback
-    }
-
-    // Display results
-    document.getElementById('displayName').textContent = displayName;
-    document.getElementById('username').textContent = actualUsername;
-    document.getElementById('joinDate').textContent = joinDate;
-    const img = document.getElementById('avatarImg');
-    img.src = avatarUrl;
-    img.style.display = 'block';
-
-  } catch (error) {
-    console.error(error);
-    document.getElementById('displayName').textContent = 'Error fetching data';
+  if (vibrationEnabled) {
+    vibrateToggle.textContent = 'Vibration ON (Click to Stop)';
+    vibrateToggle.classList.add('vibrate-on');
+    testVibration();
+  } else {
+    vibrateToggle.textContent = 'Vibration OFF (Click to Start)';
+    vibrateToggle.classList.remove('vibrate-on');
+    stopVibration();
   }
 });
+
+function testVibration() {
+  const gamepads = navigator.getGamepads();
+  const gp = gamepads[gamepadIndex];
+
+  if (!gp) return;
+
+  // Chrome/Edge style
+  if (gp.vibrationActuator && gp.vibrationActuator.playEffect) {
+    try {
+      gp.vibrationActuator.playEffect('dual-rumble', {
+        duration: 500,
+        startDelay: 0,
+        strongMagnitude: 0.8,
+        weakMagnitude: 1.0
+      });
+    } catch (e) {
+      console.log('Vibration failed:', e);
+    }
+  }
+  // Standard hapticActuators fallback
+  else if (gp.hapticActuators && gp.hapticActuators.length > 0) {
+    try {
+      gp.hapticActuators[0].pulse(1.0, 500);
+    } catch (e) {
+      console.log('Haptic failed:', e);
+    }
+  } else {
+    alert('Vibration not supported on this controller/browser');
+  }
+}
+
+function stopVibration() {
+  const gamepads = navigator.getGamepads();
+  const gp = gamepads[gamepadIndex];
+  
+  if (gp && gp.vibrationActuator && gp.vibrationActuator.reset) {
+    gp.vibrationActuator.reset();
+  }
+}
