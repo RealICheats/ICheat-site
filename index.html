@@ -1,10 +1,31 @@
-<h2>Roblox User Lookup</h2>
-<input type="text" id="robloxUsername" placeholder="Enter Roblox username (e.g., Roblox)" />
-<button id="lookupRobloxBtn">Search</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controller Vibration Tester</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="status-container">
+    <div class="status-light red" id="statusLight">X</div>
+    <div class="status-text" id="statusText">No Controller Connected</div>
+    <div class="connected-info" id="connectedInfo">
+      Connected: <span id="controllerName">-</span>
+    </div>
+  </div>
 
-<div id="robloxResult" style="margin-top: 20px;">
-  <p><strong>Display Name:</strong> <span id="displayName">—</span></p>
-  <p><strong>Username:</strong> <span id="username">—</span></p>
-  <p><strong>Joined:</strong> <span id="joinDate">—</span></p>
-  <img id="avatarImg" src="" alt="Avatar" style="width: 150px; height: 150px; border-radius: 50%; display: none;" />
-</div>
+  <div class="toggle-container">
+    <h2>Controller Vibration</h2>
+    <button class="toggle-btn" id="vibrateToggle">Connect & Test Vibration</button>
+    <div class="instructions">
+      <strong>How to use:</strong><br>
+      1. Plug in your controller (Xbox, PS, etc.)<br>
+      2. <strong>Press any button</strong> on controller to activate<br>
+      3. Light turns green → toggle vibration on/off
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
