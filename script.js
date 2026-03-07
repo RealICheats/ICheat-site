@@ -1,115 +1,101 @@
-let vibrationEnabled = false;
-let gamepadIndex = -1;
-
-const statusLight = document.getElementById('statusLight');
-const statusText = document.getElementById('statusText');
-const vibrateToggle = document.getElementById('vibrateToggle');
-const connectedInfo = document.getElementById('connectedInfo');
-const controllerName = document.getElementById('controllerName');
-
-// Listen for connection/disconnection events
-window.addEventListener('gamepadconnected', (e) => {
-  console.log('Gamepad connected:', e.gamepad);
-  detectGamepad();
-});
-
-window.addEventListener('gamepaddisconnected', (e) => {
-  console.log('Gamepad disconnected:', e.gamepad);
-  updateStatus(false, null);
-});
-
-// Poll to detect changes (some browsers need this)
-setInterval(detectGamepad, 1000);
-
-// Initial check
-detectGamepad();
-
-function detectGamepad() {
-  const gamepads = navigator.getGamepads();
-  for (let i = 0; i < gamepads.length; i++) {
-    if (gamepads[i]) {
-      gamepadIndex = i;
-      updateStatus(true, gamepads[i]);
-      return;
-    }
-  }
-  updateStatus(false, null);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-function updateStatus(connected, gamepad) {
-  if (connected && gamepad) {
-    statusLight.className = 'status-light green';
-    statusText.textContent = 'Controller Connected!';
-    connectedInfo.style.display = 'block';
-    controllerName.textContent = gamepad.id.split('(')[0] || 'Unknown Controller';
-    vibrationEnabled = false;
-    vibrateToggle.textContent = 'Connect & Test Vibration';
-    vibrateToggle.classList.remove('vibrate-on');
-  } else {
-    statusLight.className = 'status-light red';
-    statusText.textContent = 'No Controller Connected';
-    connectedInfo.style.display = 'none';
-    gamepadIndex = -1;
-  }
+body {
+  min-height: 100vh;
+  background: #0f0f0f;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-// Toggle button logic
-vibrateToggle.addEventListener('click', () => {
-  if (gamepadIndex === -1) {
-    alert('Connect a controller and press any button first!');
-    detectGamepad();
-    return;
-  }
-
-  vibrationEnabled = !vibrationEnabled;
-
-  if (vibrationEnabled) {
-    vibrateToggle.textContent = 'Vibration ON (Click to Stop)';
-    vibrateToggle.classList.add('vibrate-on');
-    testVibration();
-  } else {
-    vibrateToggle.textContent = 'Vibration OFF (Click to Start)';
-    vibrateToggle.classList.remove('vibrate-on');
-    stopVibration();
-  }
-});
-
-function testVibration() {
-  const gamepads = navigator.getGamepads();
-  const gp = gamepads[gamepadIndex];
-
-  if (!gp) return;
-
-  // Chrome/Edge style
-  if (gp.vibrationActuator && gp.vibrationActuator.playEffect) {
-    try {
-      gp.vibrationActuator.playEffect('dual-rumble', {
-        duration: 500,
-        startDelay: 0,
-        strongMagnitude: 0.8,
-        weakMagnitude: 1.0
-      });
-    } catch (e) {
-      console.log('Vibration failed:', e);
-    }
-  }
-  // Standard hapticActuators fallback
-  else if (gp.hapticActuators && gp.hapticActuators.length > 0) {
-    try {
-      gp.hapticActuators[0].pulse(1.0, 500);
-    } catch (e) {
-      console.log('Haptic failed:', e);
-    }
-  } else {
-    alert('Vibration not supported on this controller/browser');
-  }
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  border: 1px solid #2a2a2a;
 }
 
-function stopVibration() {
-  const gamepads = navigator.getGamepads();
-  const gp = gamepads[gamepadIndex];
-  
-  if (gp && gp.vibrationActuator && gp.vibrationActuator.reset) {
-    gp.vibrationActuator.reset();
-  }
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.form-group {
+  margin-bottom: 1.8rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  color: #bbbbbb;
+}
+
+input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #222222;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: all 0.25s;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(99,102,241,0.3);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.forgot {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.forgot a {
+  color: #a5b4fc;
+  text-decoration: none;
+}
+
+.forgot a:hover {
+  color: #c7d2fe;
+  text-decoration: underline;
 }
