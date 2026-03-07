@@ -1,101 +1,15 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+// Basic form handling (prevent default + show alert for demo)
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
 
-body {
-  min-height: 100vh;
-  background: #0f0f0f;
-  color: #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.login-container {
-  width: 100%;
-  max-width: 400px;
-  background: #1a1a1a;
-  border-radius: 16px;
-  padding: 40px 32px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-  border: 1px solid #2a2a2a;
-}
-
-h1 {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: #ffffff;
-  letter-spacing: 1px;
-}
-
-.form-group {
-  margin-bottom: 1.8rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.6rem;
-  font-size: 0.95rem;
-  color: #bbbbbb;
-}
-
-input {
-  width: 100%;
-  padding: 14px 16px;
-  background: #222222;
-  border: 1px solid #333333;
-  border-radius: 8px;
-  color: white;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-input:focus {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
-}
-
-.login-btn {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1.5rem;
-  transition: all 0.25s;
-}
-
-.login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(99,102,241,0.3);
-}
-
-.login-btn:active {
-  transform: translateY(0);
-}
-
-.forgot {
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-}
-
-.forgot a {
-  color: #a5b4fc;
-  text-decoration: none;
-}
-
-.forgot a:hover {
-  color: #c7d2fe;
-  text-decoration: underline;
-}
+  if (username && password) {
+    alert(`Welcome back, ${username}! (Demo login)`);
+    // In a real app: send data to backend / Netlify Function here
+    // Example: fetch('/.netlify/functions/login', { method: 'POST', body: JSON.stringify({ username, password }) })
+  } else {
+    alert('Please fill in both fields');
+  }
+});
