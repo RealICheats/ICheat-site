@@ -5,143 +5,97 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
   min-height: 100vh;
+  background: #0f0f0f;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
   padding: 20px;
-  gap: 30px;
 }
 
-.status-light {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 4px solid rgba(255,255,255,0.3);
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  position: relative;
-}
-
-.status-light.red {
-  background: radial-gradient(circle, #ff4757 0%, #ff3838 70%);
-  box-shadow: 0 0 30px rgba(255,71,87,0.6);
-  animation: pulse-red 1.5s infinite;
-}
-
-.status-light.green {
-  background: radial-gradient(circle, #2ed573 0%, #1abc9c 70%);
-  box-shadow: 0 0 30px rgba(46,213,115,0.8);
-  animation: pulse-green 1s infinite;
-}
-
-@keyframes pulse-red {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-@keyframes pulse-green {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-}
-
-.status-container {
-  text-align: center;
-  background: rgba(255,255,255,0.1);
-  padding: 20px 30px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-
-.status-text {
-  margin-top: 10px;
-  font-size: 18px;
-  font-weight: 300;
-}
-
-.toggle-container {
-  background: rgba(255,255,255,0.1);
-  padding: 30px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  text-align: center;
+.login-container {
   width: 100%;
   max-width: 400px;
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  border: 1px solid #2a2a2a;
 }
 
-.toggle-btn {
-  background: linear-gradient(45deg, #ff6b6b, #feca57);
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(255,107,107,0.4);
-  text-transform: uppercase;
+h1 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #ffffff;
   letter-spacing: 1px;
 }
 
-.toggle-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(255,107,107,0.6);
+.form-group {
+  margin-bottom: 1.8rem;
 }
 
-.toggle-btn:active {
-  transform: translateY(-1px);
+label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  color: #bbbbbb;
 }
 
-.toggle-btn.vibrate-on {
-  background: linear-gradient(45deg, #00d2d3, #54a0ff);
-  box-shadow: 0 5px 15px rgba(0,210,211,0.4);
+input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #222222;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.2s;
 }
 
-.toggle-btn.vibrate-on:hover {
-  box-shadow: 0 8px 25px rgba(0,210,211,0.6);
+input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
 }
 
-.instructions {
-  background: rgba(255,255,255,0.1);
-  padding: 20px;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  margin-top: 20px;
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: all 0.25s;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(99,102,241,0.3);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.forgot {
   text-align: center;
-  font-size: 14px;
-  line-height: 1.5;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
 }
 
-.connected-info {
-  margin-top: 15px;
-  padding: 10px;
-  background: rgba(46,213,115,0.2);
-  border-radius: 10px;
-  font-size: 14px;
-  display: none;
+.forgot a {
+  color: #a5b4fc;
+  text-decoration: none;
 }
 
-@media (max-width: 480px) {
-  .status-light {
-    width: 50px;
-    height: 50px;
-    font-size: 12px;
-  }
-  
-  .toggle-btn {
-    padding: 12px 30px;
-    font-size: 16px;
-  }
+.forgot a:hover {
+  color: #c7d2fe;
+  text-decoration: underline;
 }
