@@ -83,19 +83,3 @@ input:focus {
 .login-btn:active {
   transform: translateY(0);
 }
-
-.forgot {
-  text-align: center;
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-}
-
-.forgot a {
-  color: #a5b4fc;
-  text-decoration: none;
-}
-
-.forgot a:hover {
-  color: #c7d2fe;
-  text-decoration: underline;
-}
