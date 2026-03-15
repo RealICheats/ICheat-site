@@ -4,33 +4,49 @@ const ctx = canvas.getContext('2d');
 const status = document.getElementById('status');
 const switchBtn = document.getElementById('switchCamera');
 
-let currentFacingMode = 'user'; // 'user' = front, 'environment' = back
+let currentFacingMode = 'user';
+let faceMeshInstance;
+let loadAttempts = 0;
+const MAX_LOAD_ATTEMPTS = 3;
 
-// Load MediaPipe Face Mesh
 async function loadFaceMesh() {
-  status.textContent = 'Loading face detection model…';
-  const { FaceMesh } = await import('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js');
+  if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
+    status.textContent = 'Face model failed to load after retries. Try refreshing.';
+    return null;
+  }
 
-  const faceMesh = new FaceMesh({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
-  });
+  loadAttempts++;
+  status.textContent = `Loading face model (attempt ${loadAttempts}/${MAX_LOAD_ATTEMPTS})...`;
 
-  faceMesh.setOptions({
-    maxNumFaces: 5,
-    refineLandmarks: true,
-    minDetectionConfidence: 0.5,
-    minTrackingConfidence: 0.5
-  });
+  try {
+    const { FaceMesh } = await import('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js');
 
-  faceMesh.onResults(onResults);
+    const faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
+    });
 
-  return faceMesh;
+    faceMesh.setOptions({
+      maxNumFaces: 5,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+
+    faceMesh.onResults(onResults);
+    status.textContent = 'Model loaded! Starting face tracking...';
+    return faceMesh;
+  } catch (err) {
+    console.error('Model load error:', err);
+    status.textContent = 'Model load failed. Retrying...';
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s before retry
+    return loadFaceMesh(); // Retry
+  }
 }
 
 // Start camera
 async function startCamera() {
   try {
-    status.textContent = 'Requesting camera…';
+    status.textContent = 'Requesting camera...';
 
     if (video.srcObject) {
       video.srcObject.getTracks().forEach(track => track.stop());
@@ -46,42 +62,48 @@ async function startCamera() {
 
     video.srcObject = stream;
 
-    video.onloadedmetadata = async () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      status.textContent = 'Camera active – face tracking started';
-      const faceMesh = await loadFaceMesh();
-      sendToMediaPipe(faceMesh);
-    };
+    await new Promise(resolve => {
+      video.onloadedmetadata = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        resolve();
+      };
+    });
+
+    status.textContent = 'Camera active. Loading face model...';
+    faceMeshInstance = await loadFaceMesh();
+    if (faceMeshInstance) startDetection();
   } catch (err) {
-    console.error('Camera error:', err);
-    status.textContent = 'Camera error: ' + err.message;
+    status.textContent = 'Camera access denied or error: ' + err.message;
   }
 }
 
-// Process frames with MediaPipe
-function sendToMediaPipe(faceMesh) {
+// Process frames
+function startDetection() {
   const processFrame = async () => {
-    if (!video.srcObject) return;
-
-    await faceMesh.send({ image: video });
+    if (video.readyState === video.HAVE_ENOUGH_DATA && faceMeshInstance) {
+      await faceMeshInstance.send({ image: video });
+    }
     requestAnimationFrame(processFrame);
   };
   processFrame();
 }
 
+// Draw results
 function onResults(results) {
+  ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (results.multiFaceLandmarks) {
     for (const landmarks of results.multiFaceLandmarks) {
-      // Simple bounding box from landmarks (min/max points)
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       for (const lm of landmarks) {
-        minX = Math.min(minX, lm.x * canvas.width);
-        minY = Math.min(minY, lm.y * canvas.height);
-        maxX = Math.max(maxX, lm.x * canvas.width);
-        maxY = Math.max(maxY, lm.y * canvas.height);
+        const x = lm.x * canvas.width;
+        const y = lm.y * canvas.height;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
       }
 
       ctx.strokeStyle = 'red';
@@ -93,6 +115,7 @@ function onResults(results) {
       ctx.stroke();
     }
   }
+  ctx.restore();
 }
 
 // Switch camera
@@ -101,7 +124,7 @@ switchBtn.addEventListener('click', async () => {
   await startCamera();
 });
 
-// Start everything
+// Start on load
 startCamera();
 
 // Cleanup
