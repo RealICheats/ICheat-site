@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Camera Feed</title>
+  <title>Face Tracking Camera</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <div class="camera-container">
     <video id="video" autoplay playsinline muted></video>
+    <canvas id="overlay" class="overlay-canvas"></canvas>
     
-    <div class="overlay">
+    <div class="controls">
       <button id="switchCamera" class="btn">Switch Camera</button>
       <div id="status" class="status">Loading camera…</div>
     </div>
