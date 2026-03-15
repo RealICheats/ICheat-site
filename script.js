@@ -5,14 +5,33 @@ const status = document.getElementById('status');
 const switchBtn = document.getElementById('switchCamera');
 
 let currentFacingMode = 'user'; // 'user' = front, 'environment' = back
-let faceDetector;
 
-// Start camera and face detection
+// Load MediaPipe Face Mesh
+async function loadFaceMesh() {
+  status.textContent = 'Loading face detection model…';
+  const { FaceMesh } = await import('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.js');
+
+  const faceMesh = new FaceMesh({
+    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/${file}`,
+  });
+
+  faceMesh.setOptions({
+    maxNumFaces: 5,
+    refineLandmarks: true,
+    minDetectionConfidence: 0.5,
+    minTrackingConfidence: 0.5
+  });
+
+  faceMesh.onResults(onResults);
+
+  return faceMesh;
+}
+
+// Start camera
 async function startCamera() {
   try {
     status.textContent = 'Requesting camera…';
 
-    // Stop previous stream if exists
     if (video.srcObject) {
       video.srcObject.getTracks().forEach(track => track.stop());
     }
@@ -27,12 +46,12 @@ async function startCamera() {
 
     video.srcObject = stream;
 
-    // Wait for video to be ready
-    video.onloadedmetadata = () => {
+    video.onloadedmetadata = async () => {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      status.textContent = 'Camera active – detecting faces';
-      detectFacesLoop();
+      status.textContent = 'Camera active – face tracking started';
+      const faceMesh = await loadFaceMesh();
+      sendToMediaPipe(faceMesh);
     };
   } catch (err) {
     console.error('Camera error:', err);
@@ -40,48 +59,39 @@ async function startCamera() {
   }
 }
 
-// Face detection loop
-async function detectFacesLoop() {
-  if (!video.srcObject) return;
+// Process frames with MediaPipe
+function sendToMediaPipe(faceMesh) {
+  const processFrame = async () => {
+    if (!video.srcObject) return;
 
-  // Check if FaceDetector is supported
-  if (!('FaceDetector' in window)) {
-    status.textContent = 'Face detection not supported in this browser';
-    return;
-  }
+    await faceMesh.send({ image: video });
+    requestAnimationFrame(processFrame);
+  };
+  processFrame();
+}
 
-  // Create detector once
-  if (!faceDetector) {
-    faceDetector = new FaceDetector({
-      fastMode: true,
-      maxDetectedFaces: 5
-    });
-  }
+function onResults(results) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  try {
-    const faces = await faceDetector.detect(video);
+  if (results.multiFaceLandmarks) {
+    for (const landmarks of results.multiFaceLandmarks) {
+      // Simple bounding box from landmarks (min/max points)
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const lm of landmarks) {
+        minX = Math.min(minX, lm.x * canvas.width);
+        minY = Math.min(minY, lm.y * canvas.height);
+        maxX = Math.max(maxX, lm.x * canvas.width);
+        maxY = Math.max(maxY, lm.y * canvas.height);
+      }
 
-    // Clear previous drawings
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw red boxes around faces
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = 'rgba(255,0,0,0.7)';
-    ctx.shadowBlur = 10;
-
-    for (const face of faces) {
-      const { top, left, width, height } = face.boundingBox;
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = 4;
+      ctx.shadowColor = 'rgba(255,0,0,0.7)';
+      ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.rect(left, top, width, height);
+      ctx.rect(minX, minY, maxX - minX, maxY - minY);
       ctx.stroke();
     }
-
-    // Continue loop
-    requestAnimationFrame(detectFacesLoop);
-  } catch (err) {
-    console.error('Face detection error:', err);
-    status.textContent = 'Face detection error';
   }
 }
 
@@ -91,10 +101,10 @@ switchBtn.addEventListener('click', async () => {
   await startCamera();
 });
 
-// Start on load
+// Start everything
 startCamera();
 
-// Cleanup on page leave
+// Cleanup
 window.addEventListener('beforeunload', () => {
   if (video.srcObject) {
     video.srcObject.getTracks().forEach(track => track.stop());
